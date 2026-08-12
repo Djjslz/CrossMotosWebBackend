@@ -1,0 +1,29 @@
+{
+  "name": "crossmotoswebbackend",
+  "version": "1.0.0",
+  "description": "Backend API REST para CrossMotos",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Djjslz/CrossMotosWebBackend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Djjslz/CrossMotosWebBackend/issues"
+  },
+  "homepage": "https://github.com/Djjslz/CrossMotosWebBackend#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
