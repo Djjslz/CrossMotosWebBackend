@@ -11,7 +11,11 @@ export function validate(schema, source = 'body') {
       err.errors = errors;
       return next(err);
     }
-    req[source] = result.data;
+    if (source === 'query') {
+      for (const [key, value] of Object.entries(result.data)) req.query[key] = value;
+    } else {
+      req[source] = result.data;
+    }
     next();
   };
 }

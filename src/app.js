@@ -6,6 +6,9 @@ import rateLimit from 'express-rate-limit';
 import sanitizeMiddleware from './middleware/sanitize.middleware.js';
 import { env } from './config/env.js';
 import authRoutes from './routes/auth.routes.js';
+import categoryRoutes from './routes/category.routes.js';
+import productRoutes from './routes/product.routes.js';
+import inventoryRoutes from './routes/inventory.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
@@ -39,6 +42,9 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/categorias', categoryRoutes);
+app.use('/api/productos', productRoutes);
+app.use('/api/inventario', inventoryRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
