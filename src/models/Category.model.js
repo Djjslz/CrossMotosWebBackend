@@ -10,7 +10,6 @@ const categorySchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-categorySchema.index({ slug: 1 });
 categorySchema.index({ orden: 1 });
 
 const Category = model('Category', categorySchema);

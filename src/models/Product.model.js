@@ -33,13 +33,10 @@ const productSchema = new Schema(
   { timestamps: false }
 );
 
-productSchema.pre('save', function (next) {
+productSchema.pre('save', function () {
   this.updatedAt = new Date();
-  next();
 });
 
-productSchema.index({ slug: 1 });
-productSchema.index({ codigo: 1 });
 productSchema.index({ categoria: 1 });
 productSchema.index({ marca: 1 });
 productSchema.index({ precio: 1 });

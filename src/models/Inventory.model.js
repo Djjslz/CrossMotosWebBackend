@@ -16,8 +16,6 @@ inventorySchema.virtual('stockBajo').get(function () {
   return this.stock <= this.stockMinimo;
 });
 
-inventorySchema.index({ producto: 1 });
-inventorySchema.index({ sku: 1 });
 inventorySchema.index({ stock: 1 });
 
 const Inventory = model('Inventory', inventorySchema);
