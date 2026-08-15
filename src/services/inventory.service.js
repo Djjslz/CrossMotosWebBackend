@@ -32,7 +32,7 @@ export async function listarInventarioService(query) {
   const [result] = await Inventory.aggregate([
     ...base,
     { $set: { stockBajo: { $lte: ['$stock', '$stockMinimo'] } } },
-    { $project: { _id: 1, sku: 1, stock: 1, stockMinimo: 1, ubicacion: 1, stockBajo: 1, ultimaActualizacion: 1, producto: { _id: '$productoDoc._id', nombre: '$productoDoc.nombre', imagenes: '$productoDoc.imagenes' } } },
+    { $project: { _id: 1, sku: 1, stock: 1, stockMinimo: 1, ubicacion: 1, stockBajo: 1, ultimaActualizacion: 1, producto: { _id: '$productoDoc._id', nombre: '$productoDoc.nombre', imagenes: '$productoDoc.imagenes', precio: '$productoDoc.precio', destacado: '$productoDoc.destacado' } } },
     {
       $facet: {
         metadata: [{ $count: 'total' }],
