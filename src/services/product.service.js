@@ -7,7 +7,9 @@ import ApiError from '../utils/ApiError.js';
 const populateCategoria = { path: 'categoria', select: 'nombre slug' };
 
 export async function listarProductosService(query) {
-  const { page, limit, categoria, marca, busqueda, precioMin, precioMax, ordenar } = query;
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 12;
+  const { categoria, marca, busqueda, precioMin, precioMax, ordenar } = query;
   const filtro = { activo: true };
 
   if (categoria) {
@@ -26,24 +28,67 @@ export async function listarProductosService(query) {
   }
   filtro.precio = { ...(filtro.precio || {}), $gt: 0 };
 
-  const [items, total] = await Promise.all([
-    Product.find(filtro)
-      .sort(ordenar)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate(populateCategoria)
-      .lean(),
-    Product.countDocuments(filtro),
-  ]);
+  const pipeline = [
+    { $match: filtro },
+    { $sort: { ...(typeof ordenar === 'string' ? { [ordenar.replace('-', '')]: ordenar.startsWith('-') ? -1 : 1 } : { createdAt: -1 }) } },
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'categoria',
+        foreignField: '_id',
+        as: 'categoriaDoc',
+      },
+    },
+    {
+      $addFields: {
+        categoria: {
+          $arrayElemAt: [
+            {
+              $map: {
+                input: '$categoriaDoc',
+                as: 'c',
+                in: { nombre: '$$c.nombre', slug: '$$c.slug' },
+              },
+            },
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $project: {
+        nombre: 1,
+        slug: 1,
+        marca: 1,
+        precio: 1,
+        precioAnterior: 1,
+        imagenes: 1,
+        descripcionCorta: 1,
+        destacado: 1,
+        categoria: 1,
+        codigo: 1,
+        createdAt: 1,
+      },
+    },
+    {
+      $facet: {
+        metadata: [{ $count: 'total' }],
+        data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+      },
+    },
+  ];
 
-  const inventarios = await Inventory.find({
-    producto: { $in: items.map((p) => p._id) },
-  })
+  const [result] = await Product.aggregate(pipeline);
+
+  const total = result.metadata[0]?.total ?? 0;
+  const ids = result.data.map((p) => p._id);
+
+  const inventarios = await Inventory.find({ producto: { $in: ids } })
     .select('producto stock')
     .lean();
-
   const stockMap = new Map(inventarios.map((i) => [String(i.producto), i.stock]));
-  const data = items.map((p) => ({ ...p, stock: stockMap.get(String(p._id)) ?? 0 }));
+
+  const data = result.data.map((p) => ({ ...p, stock: stockMap.get(String(p._id)) ?? 0 }));
 
   return {
     data,
