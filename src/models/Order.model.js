@@ -36,6 +36,7 @@ const orderSchema = new Schema(
 );
 
 orderSchema.index({ estado: 1 });
+orderSchema.index({ estado: 1, createdAt: -1 });
 orderSchema.index({ createdAt: -1 });
 
 const Order = model('Order', orderSchema);
