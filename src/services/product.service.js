@@ -140,6 +140,13 @@ export async function crearProductoService(data) {
   const categoria = await Category.findById(data.categoria);
   if (!categoria) throw ApiError.notFound('Categoría no encontrada');
 
+  const { stock, ...rest } = data;
+  const codigo = (rest.codigo ?? `WEB-${Date.now()}`).toUpperCase();
+
+  if (await Product.exists({ codigo })) {
+    throw ApiError.badRequest(`Ya existe un producto con el código ${codigo}`);
+  }
+
   const slugBase = slugify(data.nombre, { lower: true, strict: true });
   let slug = slugBase;
   let contador = 1;
@@ -147,16 +154,39 @@ export async function crearProductoService(data) {
     slug = `${slugBase}-${contador++}`;
   }
 
-  const producto = await Product.create({ ...data, slug, codigo: `WEB-${Date.now()}` });
-  await Inventory.create({ producto: producto._id, sku: `WEB-${Date.now()}`, stock: 0 });
+  const producto = await Product.create({ ...rest, codigo, slug });
+  await Inventory.create({ producto: producto._id, sku: codigo, stock: stock ?? 0 });
   return producto;
 }
 
 export async function actualizarProductoService(id, data) {
   const producto = await Product.findById(id);
   if (!producto) throw ApiError.notFound('Producto no encontrado');
-  Object.assign(producto, data);
+
+  const { stock, ...rest } = data;
+  if (rest.codigo) {
+    const codigo = rest.codigo.toUpperCase();
+    if (await Product.exists({ codigo, _id: { $ne: id } })) {
+      throw ApiError.badRequest(`Ya existe un producto con el código ${codigo}`);
+    }
+    rest.codigo = codigo;
+  }
+
+  Object.assign(producto, rest);
   await producto.save();
+
+  if (stock !== undefined) {
+    const inventario = await Inventory.findOne({ producto: producto._id });
+    if (inventario) {
+      inventario.stock = stock;
+      inventario.sku = rest.codigo || inventario.sku;
+      inventario.ultimaActualizacion = new Date();
+      await inventario.save();
+    } else {
+      await Inventory.create({ producto: producto._id, sku: rest.codigo || producto.codigo, stock });
+    }
+  }
+
   return producto;
 }
 

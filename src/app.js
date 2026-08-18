@@ -11,9 +11,11 @@ import productRoutes from './routes/product.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import contactRoutes from './routes/contact.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(helmet());
 function esOrigenPermitido(origin) {
@@ -59,6 +61,7 @@ app.use('/api/productos', productRoutes);
 app.use('/api/inventario', inventoryRoutes);
 app.use('/api/pedidos', orderRoutes);
 app.use('/api/contactos', contactRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -9,7 +9,9 @@ const productSchema = new Schema(
     descripcionCorta: { type: String, maxlength: 200 },
     marca: { type: String, trim: true }, // derivada de REFERENCIA/LINEA
     categoria: { type: Schema.Types.ObjectId, ref: 'Category' },
+    imagenes: [{ type: String }],
     precio: { type: Number, min: 0 }, // PRECIO DETAL
+    precioAnterior: { type: Number, min: 0 },
     precioMayor: { type: Number, default: 0, min: 0 },
     costo: { type: Number, min: 0 }, // PRECIO DE COSTO
     iva: { type: Number, default: 0 }, // % IVA

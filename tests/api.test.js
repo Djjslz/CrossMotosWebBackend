@@ -16,6 +16,8 @@ let Product;
 let Inventory;
 let Order;
 let Contact;
+let Category;
+let Image;
 let app;
 
 before(async () => {
@@ -28,6 +30,8 @@ before(async () => {
   ({ default: Inventory } = await import('../src/models/Inventory.model.js'));
   ({ default: Order } = await import('../src/models/Order.model.js'));
   ({ default: Contact } = await import('../src/models/Contact.model.js'));
+  ({ default: Category } = await import('../src/models/Category.model.js'));
+  ({ default: Image } = await import('../src/models/Image.model.js'));
 
   await User.create({
     nombre: 'Davidez',
@@ -218,4 +222,108 @@ test('auth: login con email también funciona', async () => {
   });
   assert.equal(r.status, 200);
   assert.equal(r.body.data.usuario.rol, 'admin');
+});
+
+test('POST /api/productos crea producto con codigo, imagenes y stock', async () => {
+  const token = await login();
+  const categoria = await Category.create({ nombre: 'Accesorios', slug: 'accesorios' });
+
+  const r = await api('/api/productos', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      nombre: 'Kit limpieza casco',
+      codigo: 'KIT-LIM',
+      marca: 'CrossMotos',
+      categoria: String(categoria._id),
+      precio: 45000,
+      precioAnterior: 55000,
+      stock: 8,
+      imagenes: ['/api/uploads/fake1'],
+      descripcionCorta: 'Limpia tu casco',
+      destacado: true,
+    }),
+  });
+
+  assert.equal(r.status, 201);
+  assert.equal(r.body.data.codigo, 'KIT-LIM');
+  assert.equal(r.body.data.imagenes[0], '/api/uploads/fake1');
+  assert.equal(r.body.data.precioAnterior, 55000);
+  assert.ok(r.body.data.slug.startsWith('kit-limpieza-casco'));
+
+  const inv = await Inventory.findOne({ sku: 'KIT-LIM' }).lean();
+  assert.equal(inv.stock, 8);
+});
+
+test('POST /api/productos rechaza código duplicado', async () => {
+  const token = await login();
+  const categoria = await Category.create({ nombre: 'Accesorios', slug: 'accesorios-dup' });
+  await crearProductoConStock('DUP01', 1);
+
+  const r = await api('/api/productos', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ nombre: 'Producto dup', codigo: 'DUP01', categoria: String(categoria._id), precio: 1000 }),
+  });
+  assert.equal(r.status, 400);
+});
+
+test('PUT /api/productos/:id actualiza codigo, imagenes y stock', async () => {
+  const token = await login();
+  const producto = await crearProductoConStock('EDIT01', 3, 10000);
+
+  const r = await api(`/api/productos/${producto._id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      nombre: 'Nombre editado',
+      codigo: 'EDIT02',
+      imagenes: ['/api/uploads/a', '/api/uploads/b'],
+      precio: 12000,
+      stock: 15,
+    }),
+  });
+
+  assert.equal(r.status, 200);
+  assert.equal(r.body.data.codigo, 'EDIT02');
+  assert.equal(r.body.data.imagenes.length, 2);
+
+  const inv = await Inventory.findOne({ producto: producto._id }).lean();
+  assert.equal(inv.stock, 15);
+  assert.equal(inv.sku, 'EDIT02');
+});
+
+test('POST /api/uploads sube imagen y GET la sirve', async () => {
+  const token = await login();
+
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  const fd = new FormData();
+  fd.append('imagenes', new Blob([png], { type: 'image/png' }), 'test.png');
+
+  const res = await fetch(`${base}/api/uploads`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: fd,
+  });
+  const json = await res.json();
+  assert.equal(res.status, 201);
+  assert.equal(json.data.urls.length, 1);
+
+  const url = json.data.urls[0];
+  const imgRes = await fetch(url);
+  assert.equal(imgRes.status, 200);
+  assert.equal(imgRes.headers.get('content-type'), 'image/png');
+  const bytes = Buffer.from(await imgRes.arrayBuffer());
+  assert.deepEqual(bytes, png);
+
+  assert.equal(await Image.countDocuments(), 1);
+});
+
+test('POST /api/uploads sin token → 401', async () => {
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  const fd = new FormData();
+  fd.append('imagenes', new Blob([png], { type: 'image/png' }), 'test.png');
+
+  const res = await fetch(`${base}/api/uploads`, { method: 'POST', body: fd });
+  assert.equal(res.status, 401);
 });
