@@ -16,9 +16,19 @@ import { notFoundHandler, errorHandler } from './middleware/error.middleware.js'
 const app = express();
 
 app.use(helmet());
+function esOrigenPermitido(origin) {
+  if (!origin) return true;
+  if (env.frontendUrls.includes(origin) || origin === env.frontendUrl) return true;
+  if (/\.vercel\.app$/.test(origin)) return true;
+  if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
+  return false;
+}
+
 app.use(
   cors({
-    origin: env.frontendUrl,
+    origin(origin, callback) {
+      callback(null, esOrigenPermitido(origin));
+    },
     credentials: true,
   })
 );
