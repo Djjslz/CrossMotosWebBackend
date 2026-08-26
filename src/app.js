@@ -17,7 +17,13 @@ import { notFoundHandler, errorHandler } from './middleware/error.middleware.js'
 const app = express();
 app.set('trust proxy', 1);
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+}));
 function esOrigenPermitido(origin) {
   if (!origin) return true;
   if (env.frontendUrls.includes(origin) || origin === env.frontendUrl) return true;
