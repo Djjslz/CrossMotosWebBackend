@@ -123,6 +123,7 @@ export async function cambiarEstadoPedidoService(id, data, user) {
     await restaurarStock(pedido.items);
   }
 
+  if (data.vendedor) pedido.vendedor = data.vendedor;
   pedido.estado = data.estado;
   await pedido.save();
   return pedido;

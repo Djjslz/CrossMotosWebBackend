@@ -32,6 +32,7 @@ export const listarPedidosQuery = z.object({
 
 export const cambiarEstadoSchema = z.object({
   estado: z.enum(estadosPedido),
+  vendedor: z.string().max(80).optional(),
 });
 
 export default { createOrderSchema, listarPedidosQuery, cambiarEstadoSchema, estadosPedido };
