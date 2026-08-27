@@ -45,17 +45,21 @@ export async function crearPedidoService(data) {
     total: subtotal,
     tipoEntrega: data.tipoEntrega,
     medioContacto: data.medioContacto,
+    vendedor: data.vendedor || '',
     estado: 'recibido',
   });
 
   return pedido;
 }
 
-export async function listarPedidosService(query) {
+export async function listarPedidosService(query, user) {
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 12;
   const filtro = {};
   if (query.estado) filtro.estado = query.estado;
+  if (user?.rol === 'vendedor') {
+    filtro.estado = { $nin: ['cancelado'] };
+  }
 
   const [pedidos, total] = await Promise.all([
     Order.find(filtro)
@@ -101,12 +105,16 @@ async function restaurarStock(items) {
   }
 }
 
-export async function cambiarEstadoPedidoService(id, data) {
+export async function cambiarEstadoPedidoService(id, data, user) {
   const pedido = await Order.findById(id);
   if (!pedido) throw ApiError.notFound('Pedido no encontrado');
 
   const estadoActual = pedido.estado;
   if (data.estado === estadoActual) return pedido;
+
+  if (user?.rol === 'vendedor' && data.estado !== 'entregado') {
+    throw ApiError.forbidden('Solo puedes marcar pedidos como entregados');
+  }
 
   if (data.estado === 'confirmado' && estadoActual !== 'confirmado') {
     await descontarStock(pedido.items);

@@ -17,9 +17,9 @@ import {
 const router = Router();
 
 router.post('/', validate(createOrderSchema), crearPedido);
-router.get('/', authenticate, requireRole('admin'), validate(listarPedidosQuery, 'query'), listarPedidos);
-router.get('/:id', authenticate, requireRole('admin'), obtenerPedido);
-router.put('/:id/estado', authenticate, requireRole('admin'), validate(cambiarEstadoSchema), cambiarEstadoPedido);
+router.get('/', authenticate, requireRole('admin', 'vendedor'), validate(listarPedidosQuery, 'query'), listarPedidos);
+router.get('/:id', authenticate, requireRole('admin', 'vendedor'), obtenerPedido);
+router.put('/:id/estado', authenticate, requireRole('admin', 'vendedor'), validate(cambiarEstadoSchema), cambiarEstadoPedido);
 router.delete('/:id', authenticate, requireRole('admin'), eliminarPedido);
 
 export default router;

@@ -22,6 +22,7 @@ export const createOrderSchema = z.object({
     .min(1, 'El pedido debe tener al menos un producto'),
   tipoEntrega: z.enum(['recojo_en_tienda', 'envio']).default('recojo_en_tienda'),
   medioContacto: z.enum(['whatsapp', 'formulario']).default('formulario'),
+  vendedor: z.string().max(80).optional(),
 });
 
 export const listarPedidosQuery = z.object({

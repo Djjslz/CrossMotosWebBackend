@@ -23,7 +23,24 @@ async function seed() {
     });
   }
 
-  console.log(`✅ Usuario admin listo: ${env.adminUser}`);
+  const vendedor = await User.findOne({ email: 'user1@crossmotos.com' });
+  if (vendedor) {
+    console.log('👤 Vendedor ya existe, actualizando...');
+    vendedor.nombre = 'Vendedor 1';
+    vendedor.email = 'user1@crossmotos.com';
+    vendedor.password = 'Motoscross22';
+    vendedor.rol = 'vendedor';
+    await vendedor.save();
+  } else {
+    await User.create({
+      nombre: 'Vendedor 1',
+      email: 'user1@crossmotos.com',
+      password: 'Motoscross22',
+      rol: 'vendedor',
+    });
+  }
+
+  console.log(`✅ Usuarios listos: admin (${env.adminUser}) + vendedor (user1@crossmotos.com)`);
   process.exit(0);
 }
 

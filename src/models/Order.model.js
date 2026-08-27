@@ -26,6 +26,7 @@ const orderSchema = new Schema(
     total: { type: Number, required: true, min: 0 },
     tipoEntrega: { type: String, enum: ['recojo_en_tienda', 'envio'], default: 'recojo_en_tienda' },
     medioContacto: { type: String, enum: ['whatsapp', 'formulario', 'admin'], default: 'formulario' },
+    vendedor: { type: String, trim: true, default: '' },
     estado: {
       type: String,
       enum: ['recibido', 'cotizado', 'confirmado', 'entregado', 'cancelado'],

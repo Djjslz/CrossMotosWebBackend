@@ -18,7 +18,7 @@ export async function crearPedido(req, res, next) {
 
 export async function listarPedidos(req, res, next) {
   try {
-    const { data, pagination } = await listarPedidosService(req.query);
+    const { data, pagination } = await listarPedidosService(req.query, req.user);
     res.json(successResponse('Pedidos obtenidos', data, pagination));
   } catch (err) {
     next(err);
@@ -36,7 +36,7 @@ export async function obtenerPedido(req, res, next) {
 
 export async function cambiarEstadoPedido(req, res, next) {
   try {
-    const data = await cambiarEstadoPedidoService(req.params.id, req.body);
+    const data = await cambiarEstadoPedidoService(req.params.id, req.body, req.user);
     res.json(successResponse('Estado del pedido actualizado', data));
   } catch (err) {
     next(err);
