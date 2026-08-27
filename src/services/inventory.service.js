@@ -14,6 +14,7 @@ export async function listarInventarioService(query) {
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 12;
   const busqueda = query.busqueda?.trim();
+  const destacado = query.destacado === 'true';
 
   const match = {};
   if (busqueda) {
@@ -25,6 +26,10 @@ export async function listarInventarioService(query) {
     { $unwind: { path: '$productoDoc', preserveNullAndEmptyArrays: true } },
     { $match: { 'productoDoc.activo': true } },
   ];
+
+  if (destacado) {
+    base.push({ $match: { 'productoDoc.destacado': true } });
+  }
 
   if (busqueda) {
     base.push({
