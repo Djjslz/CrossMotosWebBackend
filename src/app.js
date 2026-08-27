@@ -23,6 +23,7 @@ app.use(helmet({
       imgSrc: ["'self'", 'data:', 'https:'],
     },
   },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 function esOrigenPermitido(origin) {
   if (!origin) return true;
