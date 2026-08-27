@@ -33,7 +33,9 @@ router.post(
           filename: archivo.originalname,
           size: archivo.size,
         });
-        urls.push(`${req.protocol}://${req.get('host')}/api/uploads/${guardada._id}`);
+        const url = `${req.protocol}://${req.get('host')}/api/uploads/${guardada._id}`;
+        console.log('[UPLOAD] Imagen guardada:', { id: guardada._id, url });
+        urls.push(url);
       }
 
       res.status(201).json({ success: true, message: 'Imágenes subidas', data: { urls } });
