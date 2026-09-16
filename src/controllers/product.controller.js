@@ -6,6 +6,7 @@ import {
   crearProductoService,
   actualizarProductoService,
   desactivarProductoService,
+  sugerenciasService,
 } from '../services/product.service.js';
 
 export async function listarProductos(req, res, next) {
@@ -62,4 +63,13 @@ export async function desactivarProducto(req, res, next) {
   }
 }
 
-export default { listarProductos, listarDestacados, obtenerProducto, crearProducto, actualizarProducto, desactivarProducto };
+export async function sugerencias(req, res, next) {
+  try {
+    const data = await sugerenciasService(req.query.q);
+    res.json(successResponse('Sugerencias obtenidas', data));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export default { listarProductos, listarDestacados, obtenerProducto, crearProducto, actualizarProducto, desactivarProducto, sugerencias };

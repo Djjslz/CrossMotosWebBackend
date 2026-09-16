@@ -198,6 +198,28 @@ export async function desactivarProductoService(id) {
   return producto;
 }
 
+export async function sugerenciasService(q) {
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regexNombre = new RegExp(escaped, 'i');
+  const regexMarca = new RegExp(`^${escaped}`, 'i');
+  const productos = await Product.find({
+    activo: true,
+    precio: { $gt: 0 },
+    $or: [{ nombre: regexNombre }, { marca: regexMarca }],
+  })
+    .select('nombre slug precio imagenes marca')
+    .limit(8)
+    .lean();
+
+  return productos.map((p) => ({
+    nombre: p.nombre,
+    slug: p.slug,
+    precio: p.precio,
+    marca: p.marca,
+    imagen: p.imagenes?.[0] ?? null,
+  }));
+}
+
 export default {
   listarProductosService,
   listarDestacadosService,
@@ -205,4 +227,5 @@ export default {
   crearProductoService,
   actualizarProductoService,
   desactivarProductoService,
+  sugerenciasService,
 };

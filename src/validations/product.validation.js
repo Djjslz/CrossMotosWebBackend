@@ -39,9 +39,14 @@ export const ajusteInventarioSchema = z.object({
   ubicacion: z.string().max(50).optional(),
 });
 
+export const sugerenciasQuery = z.object({
+  q: z.string().min(2, 'Mínimo 2 caracteres').max(50),
+});
+
 export default {
   createProductSchema,
   updateProductSchema,
   listarProductosQuery,
   ajusteInventarioSchema,
+  sugerenciasQuery,
 };
