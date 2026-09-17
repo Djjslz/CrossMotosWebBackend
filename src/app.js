@@ -14,7 +14,6 @@ import contactRoutes from './routes/contact.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
 
-
 const app = express();
 app.set('trust proxy', 1);
 
